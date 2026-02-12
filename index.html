@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Sistema de Reinscripción CUGS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg-gradient-start: #f0f9ff;
+            --bg-gradient-end: #e0f2fe;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .progress-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.8s ease 0.2s backwards;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        .question-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.05rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            transform: translateX(5px);
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #dbeafe;
+        }
+
+        .option.correct {
+            border-color: var(--success);
+            background: #d1fae5;
+            animation: pulse 0.5s ease;
+        }
+
+        .option.incorrect {
+            border-color: var(--error);
+            background: #fee2e2;
+            animation: shake 0.5s ease;
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .feedback {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid var(--success);
+        }
+
+        .feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid var(--error);
+        }
+
+        .results {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: scaleIn 0.6s ease;
+        }
+
+        .results h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+            box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+            animation: rotateIn 0.8s ease;
+        }
+
+        .score-text {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: rotate(-180deg) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .question-card {
+                padding: 1.5rem;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+
+            .score-text {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quiz de Reinscripciones CUGS</h1>
+            <p>Pon a prueba tus conocimientos sobre el sistema</p>
+        </div>
+
+        <div id="progressContainer" class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">
+                Pregunta <span id="currentQuestion">0</span> de <span id="totalQuestions">10</span>
+            </div>
+        </div>
+
+        <div id="quizContainer"></div>
+        <div id="resultsContainer" class="hidden"></div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "¿Cuál es el nombre del servidor web utilizado para publicar la API?",
+                options: ["Apache", "IIS", "Nginx", "Tomcat"],
+                correct: 1
+            },
+            {
+                question: "¿Qué tecnología se utilizó para desarrollar la API REST?",
+                options: ["PHP", "Java Spring", "ASP.NET Core", "Node.js"],
+                correct: 2
+            },
+            {
+                question: "¿Cuántas capas principales tiene la arquitectura del sistema?",
+                options: ["2", "3", "4", "5"],
+                correct: 1
+            },
+            {
+                question: "¿Qué ORM se utilizó para gestionar la base de datos?",
+                options: ["Hibernate", "Entity Framework Core", "Sequelize", "Django ORM"],
+                correct: 1
+            },
+            {
+                question: "¿Cuál de estas NO es una tabla de la base de datos?",
+                options: ["Alumnos", "Profesores", "Clientes", "Carreras"],
+                correct: 2
+            },
+            {
+                question: "¿Qué tipo de endpoints se implementaron en la API?",
+                options: ["Solo GET", "GET y POST", "GET, POST, PUT y DELETE", "Solo POST y DELETE"],
+                correct: 2
+            },
+            {
+                question: "¿Qué sistema de base de datos se utilizó en el proyecto?",
+                options: ["MySQL", "PostgreSQL", "SQL Server", "MongoDB"],
+                correct: 2
+            },
+            {
+                question: "¿Cuál es una ventaja del sistema de reinscripción en línea?",
+                options: ["Aumenta errores", "Requiere más tiempo", "Reduce errores manuales", "Es más costoso"],
+                correct: 2
+            },
+            {
+                question: "¿Qué validación importante se menciona en la API?",
+                options: ["Validar emails", "Evitar duplicados", "Validar contraseñas", "Verificar edad"],
+                correct: 1
+            },
+            {
+                question: "¿Qué universidades se mencionan como referencia en el documento?",
+                options: ["UNAM y UAM", "IPN y UNAM", "ITESM y UANL", "UDG y BUAP"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function initQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            answered = false;
+            document.getElementById('totalQuestions').textContent = quizData.length;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const quizContainer = document.getElementById('quizContainer');
+            const question = quizData[currentQuestionIndex];
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            updateProgressBar();
+
+            quizContainer.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Pregunta ${currentQuestionIndex + 1}</div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="options" id="options">
+                        ${question.options.map((option, index) => `
+                            <div class="option" onclick="selectOption(${index})" data-index="${index}">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div id="feedback"></div>
+                </div>
+            `;
+            answered = false;
+        }
+
+        function selectOption(selectedIndex) {
+            if (answered) return;
+
+            answered = true;
+            const question = quizData[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            const feedback = document.getElementById('feedback');
+            
+            options.forEach(option => option.classList.add('disabled'));
+            
+            if (selectedIndex === question.correct) {
+                options[selectedIndex].classList.add('correct');
+                feedback.innerHTML = '<div class="feedback correct">✓ ¡Correcto! Muy bien.</div>';
+                score++;
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[question.correct].classList.add('correct');
+                feedback.innerHTML = '<div class="feedback incorrect">✗ Incorrecto. La respuesta correcta está marcada en verde.</div>';
+            }
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 2500);
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex) / quizData.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('quizContainer').classList.add('hidden');
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.classList.remove('hidden');
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            let message = '';
+            
+            if (percentage >= 90) {
+                message = '🎉 ¡Excelente! Dominas el tema perfectamente.';
+            } else if (percentage >= 70) {
+                message = '👏 ¡Muy bien! Buen conocimiento del sistema.';
+            } else if (percentage >= 50) {
+                message = '👍 Bien. Puedes mejorar revisando el documento.';
+            } else {
+                message = '📖 Necesitas repasar más el documento.';
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="results">
+                    <h2>¡Quiz Completado!</h2>
+                    <div class="score-circle">
+                        <div class="score-text">${percentage}%</div>
+                    </div>
+                    <div class="score-label">
+                        Respuestas correctas: ${score} de ${quizData.length}
+                    </div>
+                    <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--text-primary);">
+                        ${message}
+                    </p>
+                    <button class="restart-btn" onclick="restartQuiz()">
+                        🔄 Reintentar Quiz
+                    </button>
+                </div>
+            `;
+        }
+
+        function restartQuiz() {
+            document.getElementById('progressContainer').classList.remove('hidden');
+            document.getElementById('quizContainer').classList.remove('hidden');
+            document.getElementById('resultsContainer').classList.add('hidden');
+            initQuiz();
+        }
+
+        // Iniciar el quiz al cargar la página
+        initQuiz();
+    </script>
+</body>
+</html>
